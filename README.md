@@ -7,6 +7,6 @@ SUHANI KILLA - Frontend Developer who designed and implemented the UI using HTML
 
 YUG MEHTA - GitHub Manager who managed the GitHub repository, version control, project documentation, and collaboration workflow.
 
-AYUSHI PATEL - PPT Designer who designed the presentation deck showcasing project goals, model architecture, and future scope.
+AYUSHI PATEL - Researcher & PPT Designer who conducted in-depth research on resume formats, optimization strategies, and industry trend and Created the project presentation
 
 
