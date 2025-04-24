@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Analyzer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      tab-size: 4;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+      background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 720px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 50px;
+      border-radius: 30px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      animation: fadeSlide 0.8s ease;
+      position: relative;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .top-icon {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 48px;
+    }
+    h1 {
+      color: #059669;
+      text-align: center;
+      font-size: 2.6em;
+      margin-bottom: 35px;
+      letter-spacing: 0.5px;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 16px;
+      border: none;
+      border-radius: 16px;
+      font-size: 17px;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fbff;
+      transition: all 0.2s ease-in-out;
+    }
+    input[type="file"] {
+      cursor: pointer;
+      border: 2px dashed #6ee7b7;
+      background-color: #ecfdf5;
+      text-align: center;
+      color: #047857;
+    }
+    input[type="file"]:hover {
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      background-color: #ecfdf5;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+    button {
+      background: linear-gradient(to right, #10b981, #047857);
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      position: relative;
+    }
+    button:disabled {
+      background: #a7f3d0;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+    }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #fff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      display: none;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .result {
+      margin-top: 40px;
+      background: linear-gradient(120deg, #f0fdf4, #d1fae5);
+      padding: 26px;
+      border-left: 6px solid #10b981;
+      border-radius: 16px;
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .result p {
+      margin: 12px 0;
+      font-size: 16px;
+    }
+    strong {
+      color: #047857;
+    }
+    .emoji-label {
+      font-size: 18px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-icon">🧠</div>
+    <h1>📄 Resume Analyzer</h1>
+    <label><span class="emoji-label">📎</span><input type="file" id="resumeFile" accept=".pdf,.docx" /></label>
+    <label><span class="emoji-label">📝</span><textarea id="jobDescription" placeholder="Paste job description here..."></textarea></label>
+    <button onclick="analyzeResume()" id="analyzeBtn">
+      <span class="spinner" id="spinner"></span>
+      🚀 Analyze Resume
+    </button>
+
+    <div class="result" id="resultBox" style="display:none">
+      <p><strong>👤 Name:</strong> <span id="name"></span></p>
+      <p><strong>🧰 Skills:</strong> <span id="skills"></span></p>
+      <p><strong>📊 Match Score:</strong> <span id="match"></span>%</p>
+      <p><strong>💡 Suggestions:</strong> <span id="suggestions"></span></p>
+    </div>
+  </div>
+
+  <script>
+    function analyzeResume() {
+      const file = document.getElementById("resumeFile").files[0];
+      const jobDescription = document.getElementById("jobDescription").value;
+      const button = document.getElementById("analyzeBtn");
+      const spinner = document.getElementById("spinner");
+
+      if (!file || !jobDescription) {
+        alert("⚠ Please upload a resume and enter a job description.");
+        return;
+      }
+
+      button.disabled = true;
+      spinner.style.display = 'inline-block';
+
+      const formData = new FormData();
+      formData.append("resume", file);
+      formData.append("job_description", jobDescription);
+
+      fetch("http://127.0.0.1:5000/analyze", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        button.disabled = false;
+        spinner.style.display = 'none';
+        if (data.error) {
+          alert("❌ " + data.error);
+        } else {
+          document.getElementById("name").innerText = file.name.split(".")[0];
+          document.getElementById("skills").innerText = data.skills.join(", ");
+          document.getElementById("match").innerText = data.match_score;
+          document.getElementById("suggestions").innerText = "Try adding more role-specific keywords.";
+          document.getElementById("resultBox").style.display = "block";
+        }
+      })
+      .catch(error => {
+        button.disabled = false;
+        spinner.style.display = 'none';
+        console.error("Error:", error);
+        alert("💥 Something went wrong.");
+      });
+    }
+  </script>
+</body>
+</html>
